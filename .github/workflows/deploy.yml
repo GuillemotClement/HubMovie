@@ -1,0 +1,67 @@
+name: Deploy Next.js to GitHub Pages
+
+# on définit quand le workflow doit s'exécuté
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Définition des permissions pour le déploiement
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# on s'assure de n'avoir qu'un seul déploiement exécuté à la fois
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# on définit les jobs
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    # on récupère le code source
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # configuration de Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # installation des dépendances
+      - name: Install dependencies
+        run: npm ci
+
+      # Configuration de Next.js pour Github Pages
+      - name: Update next.config.js for GitHub Pages
+        run: |
+          echo "module.exports = { output: 'export', images: { unoptimized: true }, basePath: '/${{ github.event.repository.name }}' }" > next.config.js
+
+      # construction de l'application
+      - name: Setup Pages
+        uses: npm run build
+
+      # Configuration GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # Téléchargement des fichiers de construction
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+      # Déploiement sur GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
