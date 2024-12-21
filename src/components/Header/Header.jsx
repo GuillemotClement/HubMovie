@@ -13,9 +13,9 @@ export default function Header() {
         <div className="">
           <nav>
             <ul className="flex gap-x-2">
-              <Link href="/">Accueil</Link>
-              <Link href="/series">Séries</Link>
-              <Link href="/movies">Films</Link>
+              <li><Link href="/">Accueil</Link></li>
+              <li><Link href="/series">Séries</Link></li>
+              <li><Link href="/movies">Films</Link></li>
             </ul>
           </nav>
         </div>
